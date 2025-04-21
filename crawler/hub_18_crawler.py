@@ -1,3 +1,13 @@
+
+"""
+ _*_ coding : utf-8 _*_
+ @Time : 2025-04-22 04:33
+ @Author : luotao
+ @File : hub_18_crawler.py
+ @Description : 
+    pip install bs4
+    pip install requests
+"""
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -5,6 +15,7 @@ import random
 import re
 import json
 import os
+
 
 # 基础配置（需定期更新）
 headers = {
@@ -15,7 +26,6 @@ headers = {
     # 如需通过年龄验证可添加cookie（需手动获取）
     # 'Cookie': 'age_verified=1;'
 }
-
 
 def extract_video_url(html_content):
     """从视频页面提取最高清MP4直链"""

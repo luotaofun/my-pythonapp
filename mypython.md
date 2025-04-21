@@ -4,6 +4,53 @@ date: 2024-03-24 14:12:43
 tags: python
 ---
 
+## 代码模板
+```json
+{
+	// Place your snippets for python here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	
+
+	"Python Method Comment": {
+		"prefix": "pydoc",
+		"body": [
+		  "\"\"\"",
+		  " @Description $1",
+		  " @Author LuoTao",
+		  " @Date ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}",
+		  "\"\"\"",
+		],
+		"description": "Python方法注释模板"
+	  },
+	  "Python File Header": {
+		"prefix": "pyheader",
+		"body": [
+		"\"\"\"",	
+		" _*_ coding : utf-8 _*_",
+		" @Time : ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE} ${CURRENT_HOUR}:${CURRENT_MINUTE}",
+		" @Author : luotao",
+		" @File : ${TM_FILENAME}",
+		" @Description : $1",
+		"\"\"\"",
+		],
+		"description": "Python文件头部模板"
+	},
+	 
+}
+
+
+```
 
 
 ## pycharm配置
@@ -401,227 +448,6 @@ finally:
 * `user-agent`用户代理是特殊的字符串头使得服务器能识别客户使用的操作系统及版本等信息。
 * 将ua放到请求对象中伪装浏览器发送请求
 
-```python
-# _*_ coding : utf-8 _*_
-# @Time : 2025/3/24 16:39
-# @Author : luotao
-# @File : u3c3_18_urllib_crawler
-# @Project urllib
-import math
-import random
-import urllib.request
-import urllib.parse
-from lxml import etree
-import os
-
-
-# https://u001.25img.com/?p=1&search2=eelja3lfe1a1&search=%E5%90%88%E9%9B%86
-# https://u001.25img.com/?p=2&search2=eelja3lfe1a1&search=%E5%90%88%E9%9B%86
-# https://u001.25img.com/?p=3&search2=eelja3lfe1a1&search=%E5%90%88%E9%9B%8
-def create_request(page):
-    url_base = 'https://u001.25img.com/?'
-    # 请求参数字典
-    requestParam = {
-        'p': page,
-        'search2': 'eelja3lfe1a1',
-        # 'search': '合集'
-        # 'search': 'G-quenen'
-        'search': 'spermmania'
-        
-    }
-    queryParam = urllib.parse.urlencode(requestParam)  # 将请求参数字典编码为查询字符串
-    url = url_base + queryParam
-    headers = {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "Accept-Language": "zh-CN,zh;q=0.9,zh-TW;q=0.8,en-US;q=0.7,en;q=0.6",
-        "Cache-Control": "max-age=0",
-        "Cookie": "JSESSIONID=5E51C36C2E604BB3FCC6A6646920D35E",
-        "Referer": "https//u001.25img.com/?search2=eelja3lfe1a1&search=%E5%90%88%E8%AE%A1",
-        "User-Agent":
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
-    }
-    request = urllib.request.Request(url=url, headers=headers)  # 创建请求对象
-    return request
-
-
-def get_content(request,proxies_pool):
-    if proxies_pool:
-        while proxies_pool:
-            # response = urllib.request.urlopen(request) # 模拟浏览器向服务器发送请求
-            # 用opener对象来发送请求并获取响应。
-            # handler = urllib.request.HTTPHandler
-            proxies = random.choice(proxies_pool)  # 随机代理IP
-            # print(proxies)
-            handler = urllib.request.ProxyHandler(proxies=proxies)
-            opener = urllib.request.build_opener(handler)
-            try:
-                response = opener.open(request)
-                content = b''.join(response.readlines()).decode('utf-8')  # 读取所有行并连接成字节字符串并解码
-                return content
-            except Exception as e:
-                print(f"请求失败，代理 {proxies} 失效: {e}")
-                proxies_pool.remove(proxies)  # 移除失效的代理
-        print("所有代理均失效，请检查代理池。")
-        return None
-    else:
-        try:
-            response = urllib.request.urlopen(request, timeout=10)  
-            content = b"".join(response.readlines()).decode("utf-8")  
-            return content
-        except Exception as e:
-            print(f"请求失败: {e}")
-            return None
-
-
-def download(page, content):
-    # with open(str(page) + '.html','w',encoding='utf-8') as fp:
-    #     fp.write(content)
-    tree = etree.HTML(content)  # 将响应数据解析为HTML树，并返回HTML树对象tree
-    utitle_list = tree.xpath('/html/body/div[12]/div[2]/table/tbody/tr/td[2]/a[1]/@title')  # 标题
-    usize_list = tree.xpath('/html/body/div[12]/div[2]/table/tbody/tr/td[4]/text()')  # 内存大小
-    udate_list = tree.xpath('/html/body/div[12]/div[2]/table/tbody/tr/td[5]/text()')  # 发布时间
-    utorrent_list = tree.xpath('/html/body/div[12]/div[2]/table/tbody/tr/td[3]/a[1]/@href')  # 种子链接
-    udetail_list = tree.xpath('/html/body/div[12]/div[2]/table/tbody/tr/td[2]/a[1]/@href')  # 详情链接
-
-    baselink = 'https://u001.25img.com'
-    headers = {
-
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "Accept-Language": "zh-CN,zh;q=0.9,zh-TW;q=0.8,en-US;q=0.7,en;q=0.6",
-        "Cache-Control": "max-age=0",
-        "Cookie": "JSESSIONID=5E51C36C2E604BB3FCC6A6646920D35E",
-        "Referer": "https//u001.25img.com/?search2=eelja3lfe1a1&search=%E5%90%88%E8%AE%A1",
-        "User-Agent":
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
-    }
-    for i in range(len(utitle_list)):
-        title = utitle_list[i].replace(' ', '').replace('/', '')
-        udate = udate_list[i][:10]
-        usize = usize_list[i].replace('.', '·')
-        utorrent = baselink + utorrent_list[i]
-        udetail = baselink + udetail_list[i]
-        filename = f'./u3c3Down/{udate}{title}{usize}.torrent'
-        print(f'正在下载剩余【{len(utitle_list)-i}】==>' + utorrent)
-        try:
-            request = urllib.request.Request(utorrent, headers=headers)
-            with urllib.request.urlopen(request) as response:  # 模拟浏览器向服务器发送请求
-                proxies_pool = [
-                    {'http': '59.54.238.213:15611'},
-                    # {'http':'117.42.94.98:18739'},
-                ]
-                proxies = random.choice(proxies_pool)
-                handler = urllib.request.ProxyHandler(proxies=proxies)
-                opener = urllib.request.build_opener(handler)
-                response = opener.open(request, timeout=10)
-                content = b''.join(response.readlines())  # 读取所有行并连接成字节字符串
-                output_path='./u3c3Down'
-                if not os.path.exists(output_path):
-                    os.makedirs(output_path)
-                filename = f'{output_path}/{title}{usize}@{udate}.torrent'
-                with open(filename, 'wb') as fp:  # 使用'wb'模式写入二进制数据
-                    fp.write(content)
-        except urllib.error as e:
-            print(f"下载失败: {e}")
-
-
-if __name__ == '__main__':
-    start_page = int(input('请输入起始的页码:'))
-    end_page = int(input('请输入结束的页码:'))
-    proxies_pool = [
-        # {'http': '59.54.238.213:15611'},
-        {"http": "117.42.94.76:19820"},
-    ]
-    for page in range(start_page, end_page + 1):
-        #         每页都创建请求对象
-        request = create_request(page)
-        
-        #       获取响应数据
-        content = get_content(request,proxies_pool)
-        #       下载保存
-        download(page, content)
-
-```
-
-## xinwenlianbo_urllib_crawler
-
-```python
-# _*_ coding : utf-8 _*_
-# @Time : 2025/3/24 16:39
-# @Author : luotao
-# @File : urllibDemo
-# @Project pythonDemo
-import urllib.request
-import  urllib.parse
-import datetime
-import re
-import json
-
-
-# https://cn.govopendata.com/xinwenlianbo/20250325/
-def create_request(page):
-    url_base = 'https://cn.govopendata.com/xinwenlianbo/'
-    url = url_base +  page
-    headers = {
-        'user-agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0'
-    }
-    request = urllib.request.Request(url=url,headers=headers) # 创建请求对象
-    return request
-
-def get_content(request):
-    response = urllib.request.urlopen(request) # 模拟浏览器向服务器发送请求
-    content = b''.join(response.readlines()).decode('utf-8')  # 读取所有行并连接成字节字符串并解码
-    return content
-
-
-def download(page,content):
-    with open(str(page) + '.html','w',encoding='utf-8') as fp:
-        fp.write(content)
-
-def extract_article_body(html_content):
-    # 使用正则表达式匹配 <script type="application/ld+json"> 标签的内容
-    script_pattern = re.compile(r'<script type="application/ld\+json">(.*?)</script>', re.DOTALL)
-    script_match = script_pattern.search(html_content)
-
-    if script_match:
-        script_content = script_match.group(1)
-        # 解析 JSON 数据
-        try:
-            json_data = json.loads(script_content)
-            # 提取 articleBody 字段的内容
-            article_body = json_data.get('articleBody', '')
-            if not article_body or article_body.strip() == '':
-                # print("Article body is empty")
-                raise Exception("Article body is empty")
-            return article_body
-        except json.JSONDecodeError as e:
-            print(f"JSON 解析错误: {e}")
-            return None
-    else:
-        print("未找到 <script type='application/ld+json'> 标签")
-        return None
-
-if __name__ == '__main__':
-        # current_date = str(datetime.datetime.now().strftime('%Y%m%d'))
-        current_date = str((datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y%m%d')) # 昨天
-        page = str(current_date)
-#         每页都创建请求对象
-        request = create_request(page)
-#       获取响应数据
-        content = get_content(request)
-#       下载保存
-        download(page,content)
-        # 提取 articleBody 内容
-        article_body = extract_article_body(content)
-        if article_body:
-            prompt = ('以下为【' + current_date + '新闻文字稿】我的需求是将这篇较长的新闻稿件总结成适合发布到小红书等社交平台的内容，并且要求按照一定的格式进行整理，同时确保信息专业可靠、积极正能量，你需要对原文进行梳理分析和总结然后进行格式化输出。对于小贴士部分，你会根据信息内容，提供一些针对内容透露出来的商机或者机会，你会给出一些关键词。，增加内容的附加值。在输出之前，你会对整理好的内容进行检查，确保没有遗漏或错误，保证内容的质量。\n'
-                      + article_body)
-            download('article-' + page ,prompt)
-
-```
-
-
-
 ## get和post请求
 
 ```python
@@ -698,103 +524,6 @@ pip install jsonpath
 | `//ul/li[contains(@id,"l")]/text()` | `$..ul.li[contains(@.id,'l')]` | 查询id中包含`l`的`li`标签 |
 | `//ul/li[starts-with(@id,"l")]/text()` | `$..ul.li[starts-with(@.id,'l')]` | 查询id的值以`l`开头的`li`标签 |
 
-## taopiaopiao_jsonpath_crawler
-
-```python
-import datetime
-import os
-import urllib.request
-import random
-import json
-import jsonpath
-
-def create_request():
-    urlbase='https://www.taopiaopiao.com/cityAction.json?activityId&_ksTS=1745138158355_108&jsoncallback=jsonp109&action=cityAction&n_s=new&event_submit_doGetAllRegion=true'
-    headers={
-        "sec-ch-ua-platform": '"Windows"',
-        "X-Requested-With": "XMLHttpRequest",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
-        "Accept": "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01",
-        "sec-ch-ua": '"Microsoft Edge";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
-        "sec-ch-ua-mobile": "?0",
-        "bx-v": "2.5.28",
-        "Sec-Fetch-Site": "same-origin",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Dest": "empty",
-        "Referer": "https://www.taopiaopiao.com/?spm=a1z21.3046609.city.5.1e59112aB1cogs&tbpm=3&city=440300",
-        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7",
-        "Cookie": 'cna=wJ+LIN1DMyoCAQAAAACsptu2; xlly_s=1; tb_city=440300; tb_cityName="ye7b2g=="; isg=BA8PUzVTuwJcVr_-oI0Mn0yxnqMZNGNWc9GFECEcwX6F8C_yKQQmpkvu8yDOvTvO',
-    }
-    request=urllib.request.Request(url=urlbase,headers=headers)# 创建请求对象
-    return request
-
-def get_content(request,proxies_pool):
-    if proxies_pool:
-        while proxies_pool:
-            # response = urllib.request.urlopen(request) # 模拟浏览器向服务器发送请求
-            # 用opener对象来发送请求并获取响应。
-            # handler = urllib.request.HTTPHandler
-            proxies = random.choice(proxies_pool)  # 随机代理IP
-            # print(proxies)
-            handler = urllib.request.ProxyHandler(proxies=proxies)
-            opener = urllib.request.build_opener(handler)
-            try:
-                response = opener.open(request)
-                content = b''.join(response.readlines()).decode('utf-8')  # 读取所有行并连接成字节字符串并解码
-                return content
-            except Exception as e:
-                print(f"请求失败，代理 {proxies} 失效: {e}")
-                proxies_pool.remove(proxies)  # 移除失效的代理
-        print("所有代理均失效，请检查代理池。")
-        return None
-    else:
-        try:
-            response = urllib.request.urlopen(request, timeout=10)  
-            content = b"".join(response.readlines()).decode("utf-8")  
-            return content
-        except Exception as e:
-            print(f"请求失败: {e}")
-            return None
-
-def download(content,file_path):
-    with open(file_path, "w", encoding='utf-8') as fp:  # 使用'w'模式写入文本数据
-        fp.write(content)
-
-def parse_content(json_file):
-    try:
-        # if os.path.exists(json_file):
-        # obj = json.load(open(json_file, 'r', encoding='utf-8')) # 读取本地json
-        obj = json.loads(json_file) # 反序列化，即将json字符串转换为Python对象
-        matches  = jsonpath.jsonpath(obj,'$..regionName')
-        # 提取匹配结果
-        # result = [match.value for match in matches]
-        print(matches)
-    except Exception as e:
-        print(f"解析文件时发生错误: {e}")
-
-if __name__ == '__main__':
-    proxies_pool = [
-        # {'http': '59.54.238.213:15611'},
-        {"http": "117.42.94.76:19820"},
-    ]
-    # 创建请求对象，获取响应数据
-    request = create_request()
-    content = get_content(request,proxies_pool)
-    # content = content.replace('jsonp109(', '').replace(');', '')
-    content_json = content.split('jsonp109(')[1].split(');')[0]
-
-    # 保存数据
-    output_path = "./taopiaopiao"
-    current_date = str(datetime.datetime.now().strftime('%Y%m%d'))
-    file_path = f'{output_path}/taopiaopiao{current_date}.json'
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-        download(content_json,file_path)
-
-    # 解析数据
-    parse_content(content_json)
-```
-
 ## Beautiful Soup
 
 ```bash
@@ -819,232 +548,7 @@ pip install bs4
 | `soup.find('a', title='a2')`          | 获取 `title` 属性为 `a2` 的 `a` 标签                                   |
 | `soup.find('a', class_='a2')`         | 获取 `class` 属性为 `a2` 的 `a` 标签，注意 `class` 需要转义              |
 
-```python
-# @Author : luotao
-import math
-import datetime
-import random
-import re
-import urllib.request
-import urllib.parse
-from lxml import etree
-import os
-from bs4 import BeautifulSoup 
-import json
-import jsonpath
 
-def create_request(page):
-    baseurl = "http://www.boxofficecn.com/the-red-box-office"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
-        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-        "Referer": "http://www.boxofficecn.com/",
-        # "Accept-Encoding": "gzip, deflate",
-        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7",
-    }
-    request = urllib.request.Request(url=baseurl, headers=headers)  # 创建请求对象
-    return request
-
-
-def get_content(request, proxies_pool):
-    if proxies_pool:
-        while proxies_pool:
-            # response = urllib.request.urlopen(request) # 模拟浏览器向服务器发送请求
-            # 用opener对象来发送请求并获取响应。
-            # handler = urllib.request.HTTPHandler
-            proxies = random.choice(proxies_pool)  # 随机代理IP
-            # print(proxies)
-            handler = urllib.request.ProxyHandler(proxies=proxies)
-            opener = urllib.request.build_opener(handler)
-            try:
-                response = opener.open(request, timeout=10)  # 设置超时时间
-                content = b"".join(response.readlines()).decode(
-                    "utf-8"
-                )  # 读取所有行并连接成字节字符串并解码
-                return content
-            except Exception as e:
-                print(f"请求失败，代理 {proxies} 失效: {e}")
-                proxies_pool.remove(proxies)  # 移除失效的代理
-        print("所有代理均失效，请检查代理池。")
-        return None
-    else:
-        try:
-            response = urllib.request.urlopen(request, timeout=10)  
-            content = b"".join(response.readlines()).decode("utf-8")  
-            return content
-        except Exception as e:
-            print(f"请求失败: {e}")
-            return None
-
-def download(content,file_path):
-    with open(file_path, "w", encoding='utf-8') as fp:  # 使用'w'模式写入文本数据
-        fp.write(content)
-def parse_to_json(json_file):
-    try:
-        # if os.path.exists(json_file):
-        # obj = json.load(open(json_file, 'r', encoding='utf-8')) # 读取本地json
-        obj = json.loads(json_file) # 反序列化，即将json字符串转换为Python对象
-        # matches  = jsonpath.jsonpath(obj,'$..regionName')
-        # 提取匹配结果
-        # result = [match.value for match in matches]
-        # print(matches)
-        return obj
-    except Exception as e:
-        print(f"解析文件时发生错误: {e}")
-
-def parse_content_bs4(content):
-    soup = BeautifulSoup(content, "lxml")
-    # //*[@id="tablepress-4"]/tbody/tr/td[2]/text()
-    movie_name_with_rating = soup.select('#tablepress-4 tbody tr td:nth-of-type(2)') 
-    release_year_with_region = soup.select('#tablepress-4 tbody tr td:first-child') 
-    director = soup.select('#tablepress-4 tbody tr td:nth-of-type(3)') 
-    box_office = soup.select('#tablepress-4 tbody tr td:nth-of-type(4)') 
-    submitter = "luotaofun"
-
-    movie_list = []
-    for i in range(len(movie_name_with_rating)):
-        # 提取电影名称和评分
-        name_rating_text = movie_name_with_rating[i].get_text(strip=True) #获取单元格中的文本内容，并去除首尾空白字符。
-        name_match = re.match(r'(.+?)\（(\d+\.\d+)\）', name_rating_text) 
-        if name_match:
-            name = name_match.group(1).strip() # (.+?)匹配任意字符（除了换行符），至少匹配一次。
-            rating = name_match.group(2).strip() # (\d+\.\d+)\）匹配形如 x.y 的浮点数评分
-        else:
-            name = name_rating_text.strip()
-            rating = None
-        
-        # 提取上映年份和地区
-        year_region_text = release_year_with_region[i].get_text(strip=True)
-        year_region_match = re.match(r'(\d{4})\s*(.*)', year_region_text)
-        
-        if year_region_match:
-            year = year_region_match.group(1).strip() # (\d{4})匹配恰好 4 位数字的年份
-            region = year_region_match.group(2).strip() # \s*:匹配零个或多个空白字符（包括空格、制表符等）用于处理年份和地区的间隔。(.*):匹配任意字符（除了换行符），提取地区信息。
-        else:
-            year = None
-            region = None
-        
-        # 提取导演
-        director_text = director[i].get_text(strip=True)
-        
-        # 提取票房并清理非数字字符
-        box_office_text = box_office[i].get_text(strip=True)
-        numeric_data = ''.join(filter(str.isdigit, box_office_text)) # #将筛选出的数字字符拼接成一个连续的字符串
-        if numeric_data:
-            box_office_value = int(numeric_data)
-        else:
-            box_office_value = None
-        
-        # 创建单部电影的信息字典
-        movie_info = {
-            "name": name,           # 电影名称
-            "year": year,          # 上映年份
-            "region": region,        # 制片地区
-            "rating": rating,        # 评分
-            "director": director_text,   # 导演
-            "box_office": box_office_value, # 票房
-            "submitter": submitter      # 提交人
-        }
-        
-        # 将当前电影信息添加到总列表中
-        movie_list.append(movie_info)
-        
-    # print(movie_list)
-    # 序列化为 JSON 字符串并保存
-    json_result = json.dumps(movie_list, ensure_ascii=False) # 序列化才能写入：把内存中的数据转换为字节序列。ensure_ascii=False表示非 ASCII 字符保持原样
-    return json_result
-    
-def parse_content_xpath(content):
-    tree = etree.HTML(content)  # 将响应数据解析为HTML树，并返回HTML树对象tree
-    movie_name_with_rating = [text.strip() for text in tree.xpath('//*[@id="tablepress-4"]/tbody/tr/td[2]/text()') if text.strip()]  # 电影名称
-    release_year_with_region = tree.xpath(
-        '//*[@id="tablepress-4"]/tbody/tr/td[1]/text()'
-    )  # 上映年份
-    director = tree.xpath('//*[@id="tablepress-4"]/tbody/tr/td[3]/text()')  # 导演
-    box_office = tree.xpath('//*[@id="tablepress-4"]/tbody/tr/td[4]//text()')  # 票房
-    submitter = "luotaofun"  # 提交人
-    
-    movie_list = []
-    for i in range(len(movie_name_with_rating)):
-        # 提取电影名称和评分
-        name_rating_text = movie_name_with_rating[i].strip() #获取单元格中的文本内容，并去除首尾空白字符。
-        name_match = re.match(r'(.+?)\（(\d+\.\d+)\）', name_rating_text) 
-        if name_match:
-            name = name_match.group(1).strip() # (.+?)匹配任意字符（除了换行符），至少匹配一次。
-            rating = name_match.group(2).strip() # (\d+\.\d+)\）匹配形如 x.y 的浮点数评分
-        else:
-            name = name_rating_text.strip()
-            rating = None
-        
-        # 提取上映年份和地区
-        year_region_text = release_year_with_region[i].strip()
-        year_region_match = re.match(r'(\d{4})\s*(.*)', year_region_text)
-        
-        if year_region_match:
-            year = year_region_match.group(1).strip() # (\d{4})匹配恰好 4 位数字的年份
-            region = year_region_match.group(2).strip() # \s*:匹配零个或多个空白字符（包括空格、制表符等）用于处理年份和地区的间隔。(.*):匹配任意字符（除了换行符），提取地区信息。
-        else:
-            year = None
-            region = None
-        
-        # 提取导演
-        director_text = director[i].strip()
-        
-        # 提取票房并清理非数字字符
-        box_office_text = box_office[i].strip()
-        numeric_data = ''.join(filter(str.isdigit, box_office_text)) # #将筛选出的数字字符拼接成一个连续的字符串
-        if numeric_data:
-            box_office_value = int(numeric_data)
-        else:
-            box_office_value = None
-        
-        # 创建单部电影的信息字典
-        movie_info = {
-            "name": name,           # 电影名称
-            "year": year,          # 上映年份
-            "region": region,        # 制片地区
-            "rating": rating,        # 评分
-            "director": director_text,   # 导演
-            "box_office": box_office_value, # 票房
-            "submitter": submitter      # 提交人
-        }
-        
-        # 将当前电影信息添加到总列表中
-        movie_list.append(movie_info)
-
-    # 序列化为 JSON 字符串并保存
-    json_result = json.dumps(movie_list, ensure_ascii=False) # 序列化才能写入：把内存中的数据转换为字节序列。ensure_ascii=False表示非 ASCII 字符保持原样
-    return json_result
-
-
-if __name__ == "__main__":
-    page = 1
-    #         每页都创建请求对象
-    request = create_request(page)
-    proxies_pool = [
-        # {'http': '59.54.238.213:15611'},
-        {"http": "117.42.94.76:19820"},
-    ]
-    #       获取响应数据
-    # content = get_content(request, proxies_pool)
-    content = get_content(request,False)
-
-    # 保存数据
-    output_path = "./bs4"
-    current_date = str(datetime.datetime.now().strftime('%Y%m%d'))
-    file_path = f'{output_path}/movie{current_date}.json'
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-    download(content,file_path)
-
-    # bs4解析数据
-    json_result = parse_content_bs4(content)
-    download(json_result,'./movie/movie_boxofficecn_bs4.json')
-
-    # xpath解析数据
-    download(parse_content_xpath(content),'./movie/movie_boxofficecn_xpath.json')
-
-```
 
 ## pandas-数据结构
 
