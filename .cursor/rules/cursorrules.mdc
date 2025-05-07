@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- [mypython.md](mdc:mypython.md)是我的学习笔记
+- .venv/文件夹是我的虚拟python环境
+- [requirements.txt](mdc:requirements.txt)管理项目依赖
+- [README.md](mdc:README.md)是项目说明文件

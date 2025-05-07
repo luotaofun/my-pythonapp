@@ -95,8 +95,8 @@ def download_video(url, filename, headers):
 def fetch_video_links(max_links=10):
     """采集视频页面链接（原功能优化）"""
     collected = set()
-    page = 1
-    delay_range = (1.5, 3.0)
+    page = 1 # 当前页码
+    delay_range = (1.5, 3.0) # 请求延迟范围
 
     while len(collected) < max_links:
         try:
@@ -147,7 +147,7 @@ def main():
     print("警告：本代码仅用于技术研究演示")
 
     # 采集视频页面链接
-    video_links = fetch_video_links(max_links=3)
+    video_links = fetch_video_links(max_links=1)
     print(f"\n成功采集到 {len(video_links)} 个视频链接")
 
     # 下载视频
